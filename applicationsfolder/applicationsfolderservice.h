@@ -25,7 +25,7 @@ public:
         std::string folder = "/Applications";
         // Own what is published; the group owns the folder too.
         uint32_t owner = 0;
-        std::string group = "sudo";
+        std::string group = "wheel";
     };
 
     ApplicationsFolderService();

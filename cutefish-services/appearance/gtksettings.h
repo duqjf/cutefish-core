@@ -22,12 +22,8 @@ struct GtkSettings
 // GSettings keyfile for Wayland clients.
 void writeGtkSettings(const GtkSettings &settings);
 
-// Writes the Cutefish stylesheets for GTK 3 and 4 into the user's config as cutefish.css, with
-// the coloured window buttons when asked, and puts its import at the top of gtk.css, keeping the
-// rest of the file. The import is re-added at every login, even after the user removed it. GTK
-// reads these files when an app starts, so running apps keep what they had.
-void ensureGtkCssImports(bool coloredWindowControls);
-// The same, from `cssDir` into `configDir`.
-void ensureGtkCssImports(const std::string &configDir, const std::string &cssDir, bool coloredWindowControls);
+// Puts the Cutefish stylesheet import at the top of the user's gtk.css for GTK 3 and 4, keeping
+// the rest of the file. It is re-added at every login, even after the user removed it.
+void ensureGtkCssImports();
 
 #endif

@@ -86,7 +86,7 @@ ThemeManager::ThemeManager(Settings &settings, dbus::Connection *session, dbus::
 
     // GTK on Wayland takes these from gsettings, not settings.ini; sync them at login.
     updateGtk3Config();
-    ensureGtkCssImports(m_coloredWindowControls);
+    ensureGtkCssImports();
 }
 
 ThemeManager::~ThemeManager() = default;
@@ -249,7 +249,6 @@ void ThemeManager::setColoredWindowControls(bool value)
 
     m_coloredWindowControls = value;
     write("ColoredWindowControls", m_coloredWindowControls);
-    ensureGtkCssImports(m_coloredWindowControls);
 
     emitSignal("coloredWindowControlsChanged", m_coloredWindowControls);
 }

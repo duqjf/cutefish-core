@@ -19,3 +19,10 @@ add_executable(coredump-test coredump_test.cpp ${SERVICES_DIR}/crash/coredump.cp
 target_include_directories(coredump-test PRIVATE ${SERVICES_DIR}/crash)
 target_link_libraries(coredump-test PRIVATE Cutefish::Toolkit GTest::gtest_main)
 add_test(NAME coredump COMMAND coredump-test)
+
+add_executable(gtk-css-test gtk_css_test.cpp ${SERVICES_DIR}/appearance/gtksettings.cpp ${SERVICES_DIR}/log.cpp
+               ${SERVICES_DIR}/../common/gsettings_keyfile.cpp)
+target_include_directories(gtk-css-test PRIVATE ${SERVICES_DIR} ${SERVICES_DIR}/..)
+target_compile_definitions(gtk-css-test PRIVATE CUTEFISH_GTK_CSS_DIR="${SERVICES_DIR}/appearance/gtk")
+target_link_libraries(gtk-css-test PRIVATE Cutefish::Toolkit GTest::gtest_main)
+add_test(NAME gtk-css COMMAND gtk-css-test)

@@ -1,0 +1,88 @@
+/* Coloured window buttons, laid out as the compositor's server-side title bar
+   lays them out (decoration::Theme with the toolkit's window_controls):
+   - a 14px dot every 23px: a 16px button (the icon's size) with 1px before it;
+     the header bar's box and Chromium/Electron, which draw these buttons from
+     this stylesheet, both put 6px between buttons;
+   - the first dot's centre 17.5px from the window's edge;
+   - grey while the window is inactive; a button's glyph under the pointer.
+   The dot is a radial gradient (closest-side: an 8px ray), so it keeps its size
+   whatever the box. */
+headerbar button.titlebutton:not(.appmenu),
+.titlebar button.titlebutton:not(.appmenu),
+headerbar button.titlebutton:not(.appmenu):hover,
+.titlebar button.titlebutton:not(.appmenu):hover,
+headerbar button.titlebutton:not(.appmenu):active,
+.titlebar button.titlebutton:not(.appmenu):active,
+headerbar button.titlebutton:not(.appmenu):backdrop,
+.titlebar button.titlebutton:not(.appmenu):backdrop {
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  color: transparent;
+  -gtk-icon-shadow: none;
+  background-color: transparent;
+  background-image: none;
+}
+
+headerbar button.titlebutton.close:not(.appmenu), .titlebar button.titlebutton.close:not(.appmenu),
+headerbar button.titlebutton.close:not(.appmenu):hover, .titlebar button.titlebutton.close:not(.appmenu):hover,
+headerbar button.titlebutton.close:not(.appmenu):active, .titlebar button.titlebutton.close:not(.appmenu):active,
+headerbar button.titlebutton.close:not(.appmenu):backdrop, .titlebar button.titlebutton.close:not(.appmenu):backdrop {
+  background-image: radial-gradient(circle closest-side, #EE5A6A 0, #EE5A6A 78%, shade(#EE5A6A, 0.88) 84%, alpha(shade(#EE5A6A, 0.88), 0) 91%);
+}
+
+headerbar button.titlebutton.minimize:not(.appmenu), .titlebar button.titlebutton.minimize:not(.appmenu),
+headerbar button.titlebutton.minimize:not(.appmenu):hover, .titlebar button.titlebutton.minimize:not(.appmenu):hover,
+headerbar button.titlebutton.minimize:not(.appmenu):active, .titlebar button.titlebutton.minimize:not(.appmenu):active,
+headerbar button.titlebutton.minimize:not(.appmenu):backdrop, .titlebar button.titlebutton.minimize:not(.appmenu):backdrop {
+  background-image: radial-gradient(circle closest-side, #F4B63F 0, #F4B63F 78%, shade(#F4B63F, 0.88) 84%, alpha(shade(#F4B63F, 0.88), 0) 91%);
+}
+
+headerbar button.titlebutton.maximize:not(.appmenu), .titlebar button.titlebutton.maximize:not(.appmenu),
+headerbar button.titlebutton.maximize:not(.appmenu):hover, .titlebar button.titlebutton.maximize:not(.appmenu):hover,
+headerbar button.titlebutton.maximize:not(.appmenu):active, .titlebar button.titlebutton.maximize:not(.appmenu):active,
+headerbar button.titlebutton.maximize:not(.appmenu):backdrop, .titlebar button.titlebutton.maximize:not(.appmenu):backdrop {
+  background-image: radial-gradient(circle closest-side, #3CC68A 0, #3CC68A 78%, shade(#3CC68A, 0.88) 84%, alpha(shade(#3CC68A, 0.88), 0) 91%);
+}
+
+headerbar button.titlebutton:not(.appmenu):hover, .titlebar button.titlebutton:not(.appmenu):hover {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+headerbar button.titlebutton:not(.appmenu):active, .titlebar button.titlebutton:not(.appmenu):active {
+  opacity: 0.85;
+}
+
+/* The theme's text colour follows dark mode. Chromium marks only the button
+   :backdrop; GTK passes it down to the button too. */
+headerbar button.titlebutton.close:not(.appmenu):backdrop:not(:hover), .titlebar button.titlebutton.close:not(.appmenu):backdrop:not(:hover),
+headerbar button.titlebutton.minimize:not(.appmenu):backdrop:not(:hover), .titlebar button.titlebutton.minimize:not(.appmenu):backdrop:not(:hover),
+headerbar button.titlebutton.maximize:not(.appmenu):backdrop:not(:hover), .titlebar button.titlebutton.maximize:not(.appmenu):backdrop:not(:hover) {
+  background-image: radial-gradient(circle closest-side, alpha(@theme_fg_color, 0.2) 0, alpha(@theme_fg_color, 0.2) 78%, alpha(@theme_fg_color, 0.26) 84%, alpha(@theme_fg_color, 0) 91%);
+}
+
+/* Margins in rules of their own, so the :first-child one is not outranked by
+   the state rules above. */
+headerbar button.titlebutton:not(.appmenu), .titlebar button.titlebutton:not(.appmenu) {
+  margin-left: 1px;
+  margin-right: 0;
+}
+
+headerbar button.titlebutton:first-child, .titlebar button.titlebutton:first-child {
+  margin-left: 4px;
+}
+
+/* Chromium places the first button at the header bar's padding (no :first-child
+   there). Only Chromium's browser header bar is .header-bar; GTK's own default
+   title bar is .default-decoration too, and the padding already moves it 3px. */
+headerbar.header-bar, headerbar.default-decoration {
+  padding-left: 9px;
+}
+
+headerbar.default-decoration button.titlebutton:first-child {
+  margin-left: 1px;
+}

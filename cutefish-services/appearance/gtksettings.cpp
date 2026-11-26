@@ -73,39 +73,75 @@ void writeGtkSettings(const GtkSettings &gtk)
     });
 }
 
-static void ensureGtkCssImport(const std::string &gtkDir)
+// The file a symlinked path stands for (dotfile managers), so writing keeps the link.
+static std::string throughSymlink(const std::string &path)
 {
-    const std::string importLine =
-            "@import url(\"" + url::fromLocalFile(CUTEFISH_GTK_CSS_DIR "/" + gtkDir + ".css") + "\");";
-
-    std::string path = paths::configHome() + '/' + gtkDir + "/gtk.css";
-    // Write through a symlinked gtk.css (dotfile managers) instead of replacing the link.
     std::error_code error;
     if (fs::is_symlink(path, error) && fs::exists(path, error)) {
         const fs::path target = fs::canonical(path, error);
         if (!error)
-            path = target.string();
+            return target.string();
     }
+    return path;
+}
 
+static void writeIfChanged(const std::string &path, const std::string &contents)
+{
+    if (const auto current = file::read(path); current && *current == contents)
+        return;
+    std::error_code error;
+    fs::create_directories(fs::path(path).parent_path(), error);
+    if (!file::writeAtomically(path, contents))
+        CF_WARNING(services::log()) << "Cannot write" << path;
+}
+
+static void ensureGtkCss(const std::string &configDir, const std::string &cssDir, const std::string &gtkDir,
+                         bool coloredWindowControls)
+{
+    // A copy in the config directory instead of an import from the system data directory:
+    // sandboxed GTK apps (Flatpak) given the config directory see it, the data one they don't.
+    std::string css = "/* Written by cutefish-services from " + cssDir + "; changes here are lost. */\n";
+    std::vector<std::string> parts {gtkDir + ".css"};
+    if (coloredWindowControls)
+        parts.push_back("colored-window-controls-" + gtkDir + ".css");
+    for (const std::string &part : parts) {
+        const auto contents = file::read(cssDir + '/' + part);
+        if (!contents) {
+            CF_WARNING(services::log()) << "Cannot read" << cssDir + '/' + part;
+            continue;
+        }
+        css += *contents;
+        if (!css.empty() && css.back() != '\n')
+            css += '\n';
+    }
+    writeIfChanged(throughSymlink(configDir + '/' + gtkDir + "/cutefish.css"), css);
+
+    // GTK resolves the import next to gtk.css. Earlier versions imported the system file.
+    const std::string importLine = "@import url(\"cutefish.css\");";
+    const std::string legacyImport =
+            "@import url(\"" + url::fromLocalFile(cssDir + '/' + gtkDir + ".css") + "\");";
+
+    const std::string path = throughSymlink(configDir + '/' + gtkDir + "/gtk.css");
     std::vector<std::string> lines;
     if (const auto contents = file::read(path))
         lines = split(*contents, '\n');
     while (!lines.empty() && lines.back().empty())
         lines.pop_back();
 
-    // GTK drops an @import that follows any rule, so ours has to lead the file. Rewriting an
-    // unchanged file would make every running GTK client reload its styles.
-    if (!lines.empty() && lines.front() == importLine)
-        return;
+    // GTK drops an @import that follows any rule, so ours has to lead the file.
+    std::erase(lines, legacyImport);
     std::erase(lines, importLine);
     lines.insert(lines.begin(), importLine);
-
-    if (!file::writeAtomically(path, join(lines, "\n") + "\n"))
-        CF_WARNING(services::log()) << "Cannot write" << path;
+    writeIfChanged(path, join(lines, "\n") + "\n");
 }
 
-void ensureGtkCssImports()
+void ensureGtkCssImports(const std::string &configDir, const std::string &cssDir, bool coloredWindowControls)
 {
-    ensureGtkCssImport("gtk-3.0");
-    ensureGtkCssImport("gtk-4.0");
+    ensureGtkCss(configDir, cssDir, "gtk-3.0", coloredWindowControls);
+    ensureGtkCss(configDir, cssDir, "gtk-4.0", coloredWindowControls);
+}
+
+void ensureGtkCssImports(bool coloredWindowControls)
+{
+    ensureGtkCssImports(paths::configHome(), CUTEFISH_GTK_CSS_DIR, coloredWindowControls);
 }
